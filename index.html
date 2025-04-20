@@ -57,18 +57,19 @@
       transform: translateY(0);
     }
 
-    #result {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-      color: #0f9d58;
-    }
-
     h2 {
       text-align: center;
       color: #0f9d58;
       font-size: 1.75rem;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .small-text {
+      font-size: 0.9rem;
+      opacity: 0.7;
     }
   </style>
 </head>
@@ -76,7 +77,6 @@
   <div id="game">
     <div class="question" id="question"></div>
     <div id="choices"></div>
-    <div id="result"></div>
   </div>
 
   <script>
@@ -145,7 +145,8 @@
 
     let current = 0;
     let previousLicenses = [];
-    const askedRefinements = new Set();
+    let refinementIndex = 0;
+    const refinementQuestions = [10, 11];
 
     function renderQuestion(index) {
       const q = questions[index];
@@ -160,36 +161,6 @@
       });
     }
 
-    function showResult(license) {
-      previousLicenses.push(license);
-      const gameDiv = document.getElementById("game");
-      gameDiv.innerHTML = `
-        <h2>🎉 Recommended License: ${license}</h2>
-        <div style="text-align: center;">
-          <button onclick="refineChoice()">Not for me</button>
-        </div>
-      `;
-    }
-
-    function refineChoice() {
-      const extraQuestions = [10, 11];
-      const nextRefine = extraQuestions.find(q => !askedRefinements.has(q));
-      if (nextRefine !== undefined) {
-        askedRefinements.add(nextRefine);
-        current = nextRefine;
-        renderQuestion(current);
-      } else {
-        document.getElementById("game").innerHTML = `
-          <h2>🤔 Couldn't find a better match</h2>
-          <p style="text-align: center;">You might want to manually review options based on your preferences:</p>
-          <ul style="text-align: center; list-style: none; padding: 0;">
-            <li>${previousLicenses.map(lic => `❌ ${lic}`).join("<br>")}</li>
-          </ul>
-          <button onclick="restart()">🔁 Start Over</button>
-        `;
-      }
-    }
-
     function handleAnswer(next) {
       if (typeof next === "string") {
         showResult(next);
@@ -199,6 +170,42 @@
       }
     }
 
+    function showResult(license) {
+      previousLicenses.push(license);
+      document.getElementById("question").innerHTML = `<h2>🎉 Recommended License: ${license}</h2>`;
+      document.getElementById("choices").innerHTML = `
+        <button onclick="refineChoice()">Not for me</button>
+        <div class="small-text center">You can refine your answer with more specific questions.</div>
+      `;
+    }
+
+    function refineChoice() {
+      if (refinementIndex < refinementQuestions.length) {
+        const refineQ = refinementQuestions[refinementIndex];
+        refinementIndex++;
+        renderQuestion(refineQ);
+      } else {
+        document.getElementById("question").innerHTML = `<h2>🤔 No better match found</h2>`;
+        document.getElementById("choices").innerHTML = `
+          <div class="center">You may want to explore licenses manually.<br><br>
+            <strong>Previously suggested:</strong><br>
+            ${previousLicenses.map(l => `❌ ${l}`).join("<br>")}<br><br>
+            <button onclick="restart()">🔁 Start Over</button>
+          </div>
+        `;
+      }
+    }
+
     function restart() {
       current = 0;
       previousLicenses = [];
+      refinementIndex = 0;
+      renderQuestion(current);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderQuestion(current);
+    });
+  </script>
+</body>
+</html>
