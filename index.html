@@ -79,87 +79,116 @@
     <div id="result"></div>
   </div>
 
-  <script>
-    const questions = [
-      {
-        question: "Allow use in proprietary/closed-source software?",
-        options: ["Yes", "No"],
-        next: [1, 7]
-      },
-      {
-        question: "Require people to share changes if they redistribute your code?",
-        options: ["Yes", "No"],
-        next: [2, 4]
-      },
-      {
-        question: "Should copyleft apply only to modified files (weak copyleft)?",
-        options: ["Yes", "No"],
-        next: ["MPL 2.0", "LGPL v3"]
-      },
-      {
-        question: "Want patent protection clauses?",
-        options: ["Yes", "No"],
-        next: ["Apache License 2.0", 5]
-      },
-      {
-        question: "Prefer ultra-simple/no-strings license?",
-        options: ["Yes", "No"],
-        next: ["MIT License", "BSD 3-Clause License"]
-      },
-      {
-        question: "Prefer a business-friendly or modern license?",
-        options: ["Yes", "No"],
-        next: ["Blue Oak 1.0.0", 6]
-      },
-      {
-        question: "Want to dedicate code to public domain?",
-        options: ["Yes", "No"],
-        next: ["CC0", "Unlicense"]
-      },
-      {
-        question: "Require the same license for all derivative works (strong copyleft)?",
-        options: ["Yes", "No"],
-        next: [8, "LGPL v2.1"]
-      },
-      {
-        question: "Should server/network use require releasing source (e.g., SaaS)?",
-        options: ["Yes", "No"],
-        next: ["AGPL v3", 9]
-      },
-      {
-        question: "Prefer GPL v3 (patents + anti-Tivo) or GPL v2 (simpler)?",
-        options: ["GPL v3", "GPL v2"],
-        next: ["GPL v3", "GPL v2"]
-      }
-    ];
-
-    let current = 0;
-
-    function renderQuestion(index) {
-      const q = questions[index];
-      document.getElementById("question").innerText = `🧩 ${q.question}`;
-      const choicesDiv = document.getElementById("choices");
-      choicesDiv.innerHTML = "";
-      q.options.forEach((opt, i) => {
-        const btn = document.createElement("button");
-        btn.innerText = opt;
-        btn.onclick = () => handleAnswer(q.next[i]);
-        choicesDiv.appendChild(btn);
-      });
+<script>
+  const questions = [
+    {
+      question: "Allow use in proprietary/closed-source software?",
+      options: ["Yes", "No"],
+      next: [1, 7]
+    },
+    {
+      question: "Require people to share changes if they redistribute your code?",
+      options: ["Yes", "No"],
+      next: [2, 4]
+    },
+    {
+      question: "Should copyleft apply only to modified files (weak copyleft)?",
+      options: ["Yes", "No"],
+      next: ["MPL 2.0", "LGPL v3"]
+    },
+    {
+      question: "Want patent protection clauses?",
+      options: ["Yes", "No"],
+      next: ["Apache License 2.0", 5]
+    },
+    {
+      question: "Prefer ultra-simple/no-strings license?",
+      options: ["Yes", "No"],
+      next: ["MIT License", "BSD 3-Clause License"]
+    },
+    {
+      question: "Prefer a business-friendly or modern license?",
+      options: ["Yes", "No"],
+      next: ["Blue Oak 1.0.0", 6]
+    },
+    {
+      question: "Want to dedicate code to public domain?",
+      options: ["Yes", "No"],
+      next: ["CC0", "Unlicense"]
+    },
+    {
+      question: "Require the same license for all derivative works (strong copyleft)?",
+      options: ["Yes", "No"],
+      next: [8, "LGPL v2.1"]
+    },
+    {
+      question: "Should server/network use require releasing source (e.g., SaaS)?",
+      options: ["Yes", "No"],
+      next: ["AGPL v3", 9]
+    },
+    {
+      question: "Prefer GPL v3 (patents + anti-Tivo) or GPL v2 (simpler)?",
+      options: ["GPL v3", "GPL v2"],
+      next: ["GPL v3", "GPL v2"]
+    },
+    // Additional questions for deeper refinement
+    {
+      question: "Is ease of understanding by non-lawyers important to you?",
+      options: ["Yes", "No"],
+      next: ["MIT License", "Apache License 2.0"]
+    },
+    {
+      question: "Do you want to allow commercial use without restrictions?",
+      options: ["Yes", "No"],
+      next: ["Unlicense", "CC BY-NC"]
     }
+  ];
 
-    function handleAnswer(next) {
-      if (typeof next === "string") {
-        document.getElementById("game").innerHTML = `<h2>🎉 Recommended License: ${next}</h2>`;
-      } else {
-        current = next;
-        renderQuestion(current);
-      }
-    }
+  let current = 0;
+  let previousLicenses = [];
 
-    document.addEventListener("DOMContentLoaded", () => {
-      renderQuestion(current);
+  function renderQuestion(index) {
+    const q = questions[index];
+    document.getElementById("question").innerText = `🧩 ${q.question}`;
+    const choicesDiv = document.getElementById("choices");
+    choicesDiv.innerHTML = "";
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement("button");
+      btn.innerText = opt;
+      btn.onclick = () => handleAnswer(q.next[i]);
+      choicesDiv.appendChild(btn);
     });
-  </script>
+  }
+
+  function showResult(license) {
+    previousLicenses.push(license);
+    const gameDiv = document.getElementById("game");
+    gameDiv.innerHTML = `
+      <h2>🎉 Recommended License: ${license}</h2>
+      <div style="text-align: center;">
+        <button onclick="refineChoice()">Not for me</button>
+      </div>
+    `;
+  }
+
+  function refineChoice() {
+    const extraQuestions = [10, 11]; // indices of additional refinement questions
+    current = extraQuestions[Math.floor(Math.random() * extraQuestions.length)];
+    renderQuestion(current);
+  }
+
+  function handleAnswer(next) {
+    if (typeof next === "string") {
+      showResult(next);
+    } else {
+      current = next;
+      renderQuestion(current);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderQuestion(current);
+  });
+</script>
 </body>
 </html>
