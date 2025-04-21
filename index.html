@@ -70,6 +70,16 @@
       color: #0f9d58;
       font-size: 1.75rem;
     }
+
+    pre {
+      background: #333;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      margin-top: 2rem;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +90,21 @@
   </div>
 
   <script>
+    const licensesText = {
+      "MIT License": `MIT License
+
+Copyright (c) [YEAR] [OWNER]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND...`,
+    };
+
     const questions = [
       {
         question: "Allow use in proprietary/closed-source software?",
@@ -92,7 +117,7 @@
         next: [2, 4]
       },
       {
-        question: "Should copyleft apply only to modified files (weak copyleft)?",
+        question: "Should copyleft apply only to modified files?",
         options: ["Yes", "No"],
         next: ["MPL 2.0", "LGPL v3"]
       },
@@ -117,29 +142,39 @@
         next: ["CC0", "Unlicense"]
       },
       {
-        question: "Require the same license for all derivative works (strong copyleft)?",
+        question: "Require the same license for all derivative works?",
         options: ["Yes", "No"],
         next: [8, "LGPL v2.1"]
       },
       {
-        question: "Should server/network use require releasing source (e.g., SaaS)?",
+        question: "Should server/network use require releasing source?",
         options: ["Yes", "No"],
         next: ["AGPL v3", 9]
       },
       {
-        question: "Prefer GPL v3 (patents + anti-Tivo) or GPL v2 (simpler)?",
+        question: "GPL v3 (patents + anti-Tivo) or GPL v2 (simpler)?",
         options: ["GPL v3", "GPL v2"],
         next: ["GPL v3", "GPL v2"]
       },
       {
-        question: "Is ease of understanding by non-lawyers important to you?",
+        question: "Is ease of understanding by non-lawyers important?",
         options: ["Yes", "No"],
         next: ["MIT License", "Apache License 2.0"]
       },
       {
-        question: "Do you want to allow commercial use without restrictions?",
+        question: "Allow commercial use without restrictions?",
         options: ["Yes", "No"],
         next: ["Unlicense", "CC BY-NC"]
+      },
+      {
+        question: "Prefer permissive license with strong branding rules?",
+        options: ["Yes", "No"],
+        next: ["Facebook BSD+", "MIT License"]
+      },
+      {
+        question: "Do you want a license approved by OSI?",
+        options: ["Yes", "No"],
+        next: ["Apache License 2.0", "CC BY 4.0"]
       }
     ];
 
@@ -149,7 +184,7 @@
 
     function renderQuestion(index) {
       const q = questions[index];
-      document.getElementById("question").innerText = 🧩 ${q.question};
+      document.getElementById("question").innerText = `🧩 ${q.question}`;
       const choicesDiv = document.getElementById("choices");
       choicesDiv.innerHTML = "";
       q.options.forEach((opt, i) => {
@@ -162,31 +197,33 @@
 
     function showResult(license) {
       previousLicenses.push(license);
-      const gameDiv = document.getElementById("game");
-      gameDiv.innerHTML = 
+      let licenseText = licensesText[license] || "";
+
+      document.getElementById("game").innerHTML = `
         <h2>🎉 Recommended License: ${license}</h2>
         <div style="text-align: center;">
           <button onclick="refineChoice()">Not for me</button>
         </div>
-      ;
+        ${licenseText ? `<pre>${licenseText}</pre>` : ""}
+      `;
     }
 
     function refineChoice() {
-      const extraQuestions = [10, 11];
+      const extraQuestions = [10, 11, 12, 13];
       const nextRefine = extraQuestions.find(q => !askedRefinements.has(q));
       if (nextRefine !== undefined) {
         askedRefinements.add(nextRefine);
         current = nextRefine;
         renderQuestion(current);
       } else {
-        document.getElementById("game").innerHTML = 
+        document.getElementById("game").innerHTML = `
           <h2>🤔 Couldn't find a better match</h2>
           <p style="text-align: center;">You might want to manually review options based on your preferences:</p>
-          <ul style="text-align: center; list-style: none; padding: 0;">
-            <li>${previousLicenses.map(lic => ❌ ${lic}).join("<br>")}</li>
-          </ul>
-          <button onclick="restart()">🔁 Start Over</button>
-        ;
+          <p style="text-align: center;">${previousLicenses.map(lic => `❌ ${lic}`).join("<br>")}</p>
+          <div style="text-align: center; margin-top: 1rem;">
+            <button onclick="restart()">🔁 Start Over</button>
+          </div>
+        `;
       }
     }
 
@@ -202,3 +239,11 @@
     function restart() {
       current = 0;
       previousLicenses = [];
+      askedRefinements.clear();
+      renderQuestion(current);
+    }
+
+    renderQuestion(current);
+  </script>
+</body>
+</html>
